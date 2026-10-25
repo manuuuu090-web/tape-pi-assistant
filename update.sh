@@ -15,5 +15,5 @@ if [ "$BEFORE" != "$AFTER" ]; then
     pkill -f "python3 app.py" 2>/dev/null
     sleep 1
     source venv/bin/activate 2>/dev/null
-    nohup python3 app.py >/tmp/app.log 2>&1 &
+    setsid nohup python3 app.py >/tmp/app.log 2>&1 &
 fi

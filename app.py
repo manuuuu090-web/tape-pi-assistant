@@ -331,8 +331,10 @@ def api_system():
 def api_update():
     # lance le script de mise a jour en tache detachee (git pull + relance)
     try:
+        # start_new_session : le script survit a l'arret de l'app pendant la relance
         subprocess.Popen(["bash", str(BASE / "update.sh")],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         start_new_session=True)
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)})
