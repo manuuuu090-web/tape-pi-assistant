@@ -401,7 +401,7 @@ const _upd=$("#upd-btn"); if(_upd) _upd.addEventListener("click",async()=>{
   try{ await fetch("/api/update",{method:"POST"}); }catch(e){}
   if(s) setTimeout(()=>{ s.textContent="À jour ✓ (recharge auto si nouveau code)"; }, 8000);
 });
-renderSystem(); renderNews(); renderProgramme("Auriol");
+renderSystem(); renderProgramme("Auriol");
 
 tick(); setInterval(tick,1000);
 buildCalendar([]);                 // calendrier visible tout de suite
