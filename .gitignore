@@ -1,0 +1,7 @@
+config.json
+venv/
+__pycache__/
+*.pyc
+get_spec*.py
+setcal.py
+settravel.py

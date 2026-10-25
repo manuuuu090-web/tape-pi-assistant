@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<main>
+  <!-- ============ PAGE ACCUEIL (horloge + meteo + calendrier) ============ -->
+  <section class="page active" id="page-main">
+
+    <!-- Bandeau haut : horloge a gauche, meteo a droite -->
+    <header class="top">
+      <div class="clock-block">
+        <div class="clock" id="clock">--:--</div>
+        <div class="date" id="date">—</div>
+      </div>
+      <div class="wx-now">
+        <div class="wx-icon" id="w-icon"></div>
+        <div class="wx-right">
+          <div class="wx-temp"><span id="w-temp" class="skeleton">--</span>°</div>
+          <div class="wx-desc" id="w-desc">…</div>
+          <div class="wx-sub"><span id="w-place"></span></div>
+          <div class="wx-upd" id="w-updated"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Bandeau capteurs : interieur + details meteo + previsions -->
+    <div class="strip">
+      <div class="card indoor">
+        <div class="card-label">Température intérieure</div>
+        <div class="indoor-temp"><span id="s-temp" class="skeleton">--</span>°</div>
+        <div class="indoor-hum"><span id="s-hum">--</span>% d'humidité</div>
+        <div class="indoor-state" id="s-state"></div>
+      </div>
+      <div class="card ext">
+        <div class="card-label">Extérieur</div>
+        <div class="ext-rows">
+          <div><span class="k">Ressenti</span><span class="v"><span id="w-feels">--</span>°</span></div>
+          <div><span class="k">Humidité</span><span class="v"><span id="w-hum">--</span>%</span></div>
+          <div><span class="k">Vent</span><span class="v"><span id="w-wind">--</span> km/h</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="forecast" id="w-days"></div>
+
+    <!-- A venir (liste des prochains evenements) -->
+    <div class="agenda home-agenda">
+      <div class="agenda-title">À venir</div>
+      <div id="agenda-list"></div>
+      <div id="agenda-empty" class="agenda-empty hidden">Agenda non relié — ajoute l'URL iCal dans <code>config.json</code>.</div>
+    </div>
+  </section>
+
+  <!-- ============ PAGE CALENDRIER ============ -->
+  <section class="page" id="page-calendrier">
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="cal-arrow" id="cal-prev" aria-label="Mois précédent">‹</button>
+        <div class="cal-month" id="cal-month">—</div>
+        <button class="cal-arrow" id="cal-next" aria-label="Mois suivant">›</button>
+        <button class="cal-today" id="cal-today">Aujourd'hui</button>
+      </div>
+      <div class="cal-dow">
+        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="cal-day">
+      <div class="cal-day-title" id="cal-day-title">Touche un jour pour voir les évènements</div>
+      <div id="cal-day-events"></div>
+    </div>
+  </section>
+
+  <!-- ============ PAGE BOURSE ============ -->
+  <section class="page" id="page-bourse">
+    <div class="page-head">
+      <h2>Portefeuille</h2>
+      <div class="pf-tot">
+        <div id="pf-total" class="skeleton">--</div>
+        <div class="pf-pl" id="pf-pl"></div>
+      </div>
+    </div>
+    <div class="pf-donut-wrap"><div id="pf-donut"></div><div id="pf-legend" class="pf-legend"></div></div>
+    <div id="pf-list" class="list"></div>
+  </section>
+
+  <!-- ============ PAGE MUSIQUE ============ -->
+  <section class="page" id="page-musique">
+    <div class="page-head"><h2>Lecture en cours</h2></div>
+    <div id="np-wrap" class="np">
+      <div class="np-art" id="np-art"><svg viewBox="0 0 24 24" class="np-note"><circle cx="7" cy="18" r="2.6"/><circle cx="18" cy="16" r="2.6"/><path d="M9.6 18V6l10.4-2v12"/></svg></div>
+      <div class="np-title" id="np-title">Rien en lecture</div>
+      <div class="np-artist" id="np-artist"></div>
+      <div class="np-dev" id="np-dev"></div>
+      <div class="np-ctrl" id="np-ctrl">
+        <button class="mbtn" data-act="voldown" aria-label="Volume -"><svg viewBox="0 0 24 24"><path d="M5 9v6h4l5 4V5L9 9H5Z"/><path d="M17 12h4"/></svg></button>
+        <button class="mbtn" data-act="prev" aria-label="Précédent"><svg viewBox="0 0 24 24"><path d="M18 6v12L9 12l9-6Z"/><path d="M7 6v12"/></svg></button>
+        <button class="mbtn big" data-act="playpause" aria-label="Lecture/Pause"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+        <button class="mbtn" data-act="next" aria-label="Suivant"><svg viewBox="0 0 24 24"><path d="M6 6v12l9-6-9-6Z"/><path d="M17 6v12"/></svg></button>
+        <button class="mbtn" data-act="volup" aria-label="Volume +"><svg viewBox="0 0 24 24"><path d="M5 9v6h4l5 4V5L9 9H5Z"/><path d="M19 10v4M17 12h4"/></svg></button>
+      </div>
+    </div>
+    <div class="radio-sec">
+      <div class="radio-title">📻 Radio</div>
+      <div class="radio-grid" id="radio-grid"></div>
+      <div class="radio-state" id="radio-state"></div>
+    </div>
+  </section>
+
+  <!-- ============ PAGE MAISON (aspirateur) ============ -->
+  <section class="page" id="page-maison">
+    <div class="page-head"><h2>Maison</h2></div>
+    <div class="vac-card">
+      <div class="vac-top">
+        <div class="vac-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3.5v3"/></svg></div>
+        <div class="vac-info">
+          <div class="vac-name">Aspirateur</div>
+          <div class="vac-label" id="vac-label">—</div>
+        </div>
+        <div class="vac-bat"><span id="vac-bat">--</span><span class="vac-pct">%</span></div>
+      </div>
+      <div class="vac-ctrl">
+        <button class="vbtn" data-vac="start"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7-11-7Z"/></svg><span>Démarrer</span></button>
+        <button class="vbtn" data-vac="stop"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg><span>Stop</span></button>
+        <button class="vbtn" data-vac="home"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg><span>Base</span></button>
+        <button class="vbtn" data-vac="locate"><svg viewBox="0 0 24 24"><circle cx="12" cy="11" r="3"/><path d="M12 21c5-5.5 7-8.5 7-11a7 7 0 1 0-14 0c0 2.5 2 5.5 7 11Z"/></svg><span>Localiser</span></button>
+      </div>
+      <div class="vac-state" id="vac-state"></div>
+    </div>
+  </section>
+
+  <!-- ============ PAGE DIVERS ============ -->
+  <section class="page" id="page-divers">
+    <div class="page-head"><h2>Divers</h2></div>
+
+    <div class="sys-card">
+      <div class="card-label">État du système</div>
+      <div class="sys-grid" id="sys-grid"></div>
+      <button class="upd-btn" id="upd-btn">⟳ Mettre à jour le logiciel</button>
+      <div class="upd-state" id="upd-state"></div>
+    </div>
+
+    <div class="divers-card">
+      <div class="card-label">Actualités</div>
+      <div id="news-list"></div>
+    </div>
+
+    <div class="divers-card">
+      <div class="card-label">Programme des villes</div>
+      <div class="prog-tabs" id="prog-tabs">
+        <button class="ptab active" data-ville="Auriol">Auriol</button>
+        <button class="ptab" data-ville="Roquevaire">Roquevaire</button>
+        <button class="ptab" data-ville="Cassis">Cassis</button>
+        <button class="ptab" data-ville="La Ciotat">La Ciotat</button>
+      </div>
+      <div id="prog-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ PAGE TRAJETS ============ -->
+  <section class="page" id="page-trajet">
+    <div class="page-head"><h2>Temps de trajet</h2></div>
+    <div id="tr-list" class="list"></div>
+    <div id="tr-empty" class="empty hidden">Trajets non configurés — ajoute ta clé TomTom dans <code>config.json</code>.</div>
+  </section>
+</main>
+
+<!-- Navigation basse -->
+<nav id="nav">
+  <button class="nav-btn active" data-page="main" aria-label="Accueil">
+    <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
+    <span>Accueil</span>
+  </button>
+  <button class="nav-btn" data-page="calendrier" aria-label="Calendrier">
+    <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>
+    <span>Calendrier</span>
+  </button>
+  <button class="nav-btn" data-page="bourse" aria-label="Bourse">
+    <svg viewBox="0 0 24 24"><path d="M4 18 10 11l4 4 6-8"/><path d="M4 20h16"/></svg>
+    <span>Bourse</span>
+  </button>
+  <button class="nav-btn" data-page="musique" aria-label="Musique">
+    <svg viewBox="0 0 24 24"><circle cx="7" cy="18" r="2.4"/><circle cx="18" cy="16" r="2.4"/><path d="M9.4 18V6l10.6-2v12"/></svg>
+    <span>Musique</span>
+  </button>
+  <button class="nav-btn" data-page="maison" aria-label="Maison">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/></svg>
+    <span>Maison</span>
+  </button>
+  <button class="nav-btn" data-page="divers" aria-label="Divers">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+    <span>Divers</span>
+  </button>
+  <button class="nav-btn" data-page="trajet" aria-label="Trajets">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21c5-5.5 7-8.5 7-11a7 7 0 1 0-14 0c0 2.5 2 5.5 7 11Z"/></svg>
+    <span>Trajets</span>
+  </button>
+</nav>
+
+<!-- Veille : horloge (inactivite) -->
+<div id="screensaver" class="overlay hidden">
+  <div id="ss-time">--:--</div>
+  <div id="ss-date"></div>
+</div>
+
+<!-- Nuit : ecran noir -->
+<div id="night" class="overlay black hidden"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
