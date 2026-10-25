@@ -374,6 +374,7 @@ function renderSystem(s){
   s=s||{cpu_temp:48,cpu:12,ram:34,disk:28,uptime:"3 j 4 h",version:"v16",ip:"192.168.1.89"};
   const items=[["CPU",s.cpu_temp+"°"],["Proc.",s.cpu+"%"],["RAM",s.ram+"%"],["Disque",s.disk+"%"],["Uptime",s.uptime],["Version",s.version],["IP",s.ip]];
   g.innerHTML=items.map(it=>`<div class="sys-item"><div class="sv">${it[1]}</div><div class="sk">${it[0]}</div></div>`).join("");
+  const u=$("#upd-state"); if(u && !u.dataset.busy) u.textContent="Version "+(s.version||"?")+" · à jour ✓";
 }
 function renderNews(list){
   const el=$("#news-list"); if(!el) return;
