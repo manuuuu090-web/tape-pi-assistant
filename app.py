@@ -8,12 +8,29 @@ Donnees via API (Open-Meteo, Yahoo Finance, iCal Google Agenda, OpenRouteService
 
 Lancement :  python3 app.py    puis ouvrir http://localhost:5000 en plein ecran.
 """
-import json, os, time, subprocess, datetime as dt
+import json, os, time, subprocess, uuid, datetime as dt
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 
 BASE = Path(__file__).parent
+LOCAL_EVENTS_FILE = BASE / "local_events.json"   # evenements ajoutes a l'ecran (jamais ecrases)
 CONFIG = {}
+
+
+def load_local_events():
+    try:
+        return json.loads(LOCAL_EVENTS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def save_local_events(evs):
+    try:
+        LOCAL_EVENTS_FILE.write_text(json.dumps(evs, ensure_ascii=False, indent=2), encoding="utf-8")
+        return True
+    except Exception as e:
+        print("[local_events] erreur:", e)
+        return False
 
 def load_config():
     global CONFIG
@@ -197,6 +214,22 @@ def fetch_calendar():
     evs.sort(key=lambda e: e["start"])
     return {"configured": True, "events": evs[: int(c.get("max_events", 60))]}
 
+def calendar_data():
+    """Agenda Google (en cache) + evenements locaux ajoutes a l'ecran (toujours frais)."""
+    try:
+        base = cached("calendar", 300, fetch_calendar)
+    except Exception:
+        base = {"configured": False, "events": []}
+    evs = list(base.get("events", []))
+    configured = base.get("configured", False)
+    for e in load_local_events():
+        evs.append({"title": e.get("title", ""), "start": e.get("start", ""),
+                    "allday": e.get("allday", True), "location": e.get("location", ""),
+                    "local": True, "id": e.get("id", "")})
+        configured = True
+    evs.sort(key=lambda x: x.get("start", ""))
+    return {"configured": configured, "events": evs}
+
 # =========================================================================
 #  BOURSE (Yahoo Finance via yfinance)
 # =========================================================================
@@ -309,7 +342,7 @@ def api_all():
         "time": dt.datetime.now().isoformat(),
         "sensor": read_sht31(),
         "weather": cached("weather", 600, fetch_weather),
-        "calendar": cached("calendar", 300, fetch_calendar),
+        "calendar": calendar_data(),
         "portfolio": cached("portfolio", 120, fetch_portfolio),
         "travel": cached("travel", 300, fetch_travel),
         "nowplaying": nowplaying.get() if nowplaying else {"playing": False},
@@ -395,7 +428,33 @@ def api_weather():  return jsonify(cached("weather", 600, fetch_weather))
 @app.route("/api/sensor")
 def api_sensor():   return jsonify(read_sht31())
 @app.route("/api/calendar")
-def api_calendar(): return jsonify(cached("calendar", 300, fetch_calendar))
+def api_calendar(): return jsonify(calendar_data())
+
+@app.route("/api/event", methods=["POST"])
+def api_event_add():
+    d = request.get_json(force=True, silent=True) or {}
+    date = (d.get("date") or "").strip()      # "YYYY-MM-DD"
+    title = (d.get("title") or "").strip()
+    tm = (d.get("time") or "").strip()        # "HH:MM" optionnel
+    if not date or not title:
+        return jsonify({"ok": False, "reason": "date ou titre manquant"})
+    allday = not tm
+    start = f"{date}T{tm}:00" if tm else f"{date}T00:00:00"
+    evs = load_local_events()
+    evs.append({"id": uuid.uuid4().hex[:8], "title": title, "start": start,
+                "allday": allday, "location": ""})
+    save_local_events(evs)
+    _cache.pop("calendar", None)
+    return jsonify({"ok": True})
+
+@app.route("/api/event/delete", methods=["POST"])
+def api_event_del():
+    d = request.get_json(force=True, silent=True) or {}
+    eid = (d.get("id") or "").strip()
+    evs = [e for e in load_local_events() if e.get("id") != eid]
+    save_local_events(evs)
+    _cache.pop("calendar", None)
+    return jsonify({"ok": True})
 @app.route("/api/portfolio")
 def api_portfolio():return jsonify(cached("portfolio", 120, fetch_portfolio))
 @app.route("/api/travel")

@@ -271,3 +271,29 @@ h2{font-size:5vw; font-weight:700;}
 .pg-d{grid-row:span 2; font-size:2.6vw; color:var(--accent); font-weight:700; white-space:nowrap;}
 .pg-t{font-size:3vw; font-weight:600;}
 .pg-l{font-size:2.4vw; color:var(--mut);}
+
+/* ======================= AGENDA EDITABLE + CLAVIER ======================= */
+.cal-add{display:flex; gap:2vw; margin-top:1.2vh;}
+#ev-title{flex:1; background:var(--card); border:1px solid var(--line); color:var(--fg);
+  border-radius:2.4vw; padding:1.4vh 3vw; font-size:3vw; font-family:var(--font);}
+.ev-add-btn{background:var(--accent); border:0; color:#06121c; font-weight:700; font-size:3vw;
+  padding:1.4vh 4vw; border-radius:2.4vw; font-family:var(--font);}
+.ev-add-btn:active{transform:scale(.96);}
+.cde{position:relative;}
+.cde-del{position:absolute; right:0; top:50%; transform:translateY(-50%); width:7vw; height:7vw;
+  border-radius:50%; background:var(--card); border:1px solid var(--line); color:var(--down);
+  font-size:4vw; line-height:1; font-family:var(--font);}
+.cde-del:active{transform:translateY(-50%) scale(.9);}
+
+/* clavier tactile */
+.kbd{position:fixed; left:0; right:0; bottom:0; z-index:95; background:rgba(8,11,17,.98);
+  border-top:1px solid var(--line); padding:1.4vh 2vw calc(1.4vh + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:1.2vh;}
+.kbd-row{display:flex; gap:1.4vw; justify-content:center;}
+.kkey{flex:1; max-width:9vw; background:var(--card); border:1px solid var(--line); color:var(--fg);
+  font-size:3.6vw; padding:1.8vh 0; border-radius:1.8vw; font-family:var(--font);}
+.kkey:active{background:var(--accent); color:#06121c;}
+.kspace{max-width:40vw; flex:3;}
+.kback{max-width:16vw; color:var(--warn);}
+.kclose{max-width:22vw; background:var(--accent); color:#06121c; font-weight:700;}
+.kbd-preview{font-size:3.4vw; color:var(--fg); background:var(--card); border:1px solid var(--line);
+  border-radius:1.8vw; padding:1.2vh 3vw; min-height:3.4vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}

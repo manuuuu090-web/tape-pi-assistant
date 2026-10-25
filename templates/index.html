@@ -77,6 +77,10 @@
     <div class="cal-day">
       <div class="cal-day-title" id="cal-day-title">Touche un jour pour voir les évènements</div>
       <div id="cal-day-events"></div>
+      <div class="cal-add">
+        <input id="ev-title" readonly placeholder="➕ Écrire un évènement…">
+        <button id="ev-add" class="ev-add-btn">Ajouter</button>
+      </div>
     </div>
   </section>
 
@@ -200,6 +204,9 @@
     <span>Trajets</span>
   </button>
 </nav>
+
+<!-- Clavier tactile (apparait quand on écrit un évènement) -->
+<div id="kbd" class="kbd hidden"></div>
 
 <!-- Veille : horloge (inactivite) -->
 <div id="screensaver" class="overlay hidden">

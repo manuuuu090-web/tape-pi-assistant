@@ -5,3 +5,4 @@ __pycache__/
 get_spec*.py
 setcal.py
 settravel.py
+local_events.json

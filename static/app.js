@@ -196,14 +196,50 @@ function showDayEvents(events){
     const d=new Date(e.start);
     const when=e.allday?"Journée":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
     const el=document.createElement("div"); el.className="cde";
-    el.innerHTML=`<div class="cde-bar"></div><div class="cde-t"><div class="cde-1">${e.title}</div><div class="cde-2">${when}${e.location?" · "+e.location:""}</div></div>`;
+    el.innerHTML=`<div class="cde-bar" style="${e.local?'background:var(--accent)':''}"></div>`+
+      `<div class="cde-t"><div class="cde-1">${e.title}</div><div class="cde-2">${when}${e.location?" · "+e.location:""}</div></div>`+
+      (e.local?`<button class="cde-del" data-id="${e.id}">×</button>`:"");
     list.appendChild(el);
   });
+  list.querySelectorAll(".cde-del").forEach(b=>b.addEventListener("click",async()=>{
+    try{ await fetch("/api/event/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:b.dataset.id})}); }catch(e){}
+    refresh().then(()=>{ buildCalendar(lastEvents); showDayEvents(lastEvents); });
+  }));
 }
 // navigation calendrier
 $("#cal-prev").addEventListener("click",()=>{ viewM--; if(viewM<0){viewM=11;viewY--;} selDay=null; buildCalendar(lastEvents); showDayEvents(lastEvents); });
 $("#cal-next").addEventListener("click",()=>{ viewM++; if(viewM>11){viewM=0;viewY++;} selDay=null; buildCalendar(lastEvents); showDayEvents(lastEvents); });
 $("#cal-today").addEventListener("click",()=>{ const t=new Date(); viewY=t.getFullYear(); viewM=t.getMonth(); selDay=t.getDate(); buildCalendar(lastEvents); showDayEvents(lastEvents); });
+
+// ---- clavier tactile + ajout d'évènement ----
+const KBD_ROWS=[ "a z e r t y u i o p".split(" "), "q s d f g h j k l m".split(" "), "w x c v b n é è à ' -".split(" ") ];
+let kbdTarget=null;
+function kbdPrev(){ const p=$("#kbd-preview"); if(p) p.textContent=(kbdTarget&&kbdTarget.value)?kbdTarget.value:"…"; }
+function buildKbd(){
+  const k=$("#kbd"); if(!k) return; k.innerHTML="";
+  const prev=document.createElement("div"); prev.className="kbd-preview"; prev.id="kbd-preview"; prev.textContent="…";
+  k.appendChild(prev);
+  KBD_ROWS.forEach(row=>{ const r=document.createElement("div"); r.className="kbd-row";
+    row.forEach(ch=>{ const b=document.createElement("button"); b.className="kkey"; b.textContent=ch;
+      b.addEventListener("click",()=>{ if(kbdTarget){ kbdTarget.value+=ch; kbdPrev(); } }); r.appendChild(b); });
+    k.appendChild(r); });
+  const r=document.createElement("div"); r.className="kbd-row";
+  const mk=(lbl,cls,fn)=>{ const b=document.createElement("button"); b.className="kkey "+cls; b.textContent=lbl; b.addEventListener("click",fn); return b; };
+  r.appendChild(mk("espace","kspace",()=>{ if(kbdTarget){ kbdTarget.value+=" "; kbdPrev(); } }));
+  r.appendChild(mk("⌫","kback",()=>{ if(kbdTarget){ kbdTarget.value=kbdTarget.value.slice(0,-1); kbdPrev(); } }));
+  r.appendChild(mk("Fermer","kclose",closeKbd));
+  k.appendChild(r);
+}
+function openKbd(t){ kbdTarget=t; buildKbd(); $("#kbd").classList.remove("hidden"); }
+function closeKbd(){ const k=$("#kbd"); if(k) k.classList.add("hidden"); kbdTarget=null; }
+const _evt=$("#ev-title"); if(_evt) _evt.addEventListener("click",()=>openKbd(_evt));
+const _eva=$("#ev-add"); if(_eva) _eva.addEventListener("click",async()=>{
+  const t=$("#ev-title"); if(!t||!t.value.trim()){ return; }
+  if(selDay==null){ const n=new Date(); viewY=n.getFullYear(); viewM=n.getMonth(); selDay=n.getDate(); }
+  const date=`${viewY}-${String(viewM+1).padStart(2,"0")}-${String(selDay).padStart(2,"0")}`;
+  try{ await fetch("/api/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({date,title:t.value.trim()})}); }catch(e){}
+  t.value=""; closeKbd(); refresh().then(()=>{ buildCalendar(lastEvents); showDayEvents(lastEvents); });
+});
 
 // -------------------- A venir (agenda) --------------------
 function renderAgenda(cal){
