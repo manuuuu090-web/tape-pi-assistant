@@ -408,3 +408,9 @@ buildCalendar([]);                 // calendrier visible tout de suite
 refresh(); setInterval(refresh,60000);
 pollMusic(); setInterval(pollMusic,10000);   // la musique change souvent
 pollVacuum(); setInterval(pollVacuum,30000); // etat aspirateur
+// verification rapide de version -> rechargement auto apres une mise a jour (~20s)
+async function pollVersion(){
+  try{ const r=await fetch("/api/version"); const d=await r.json();
+    if(d.version){ if(_ver===null){ _ver=d.version; } else if(d.version!==_ver){ setTimeout(()=>location.reload(true),400); } } }catch(e){}
+}
+pollVersion(); setInterval(pollVersion,20000);
