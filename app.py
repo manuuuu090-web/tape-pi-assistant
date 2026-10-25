@@ -34,6 +34,9 @@ except Exception as e:
     print("[nowplaying] desactive:", e)
     nowplaying = None
 
+import system as sysinfo
+VERSION = sysinfo.version(str(BASE))   # hash git court, capture au demarrage
+
 # ---- petit cache pour ne pas spammer les API ----
 _cache = {}
 def cached(key, ttl, fn):
@@ -311,8 +314,28 @@ def api_all():
         "travel": cached("travel", 300, fetch_travel),
         "nowplaying": nowplaying.get() if nowplaying else {"playing": False},
         "vacuum": cached("vacuum", 20, lambda: __import__("vacuum").get_status(CONFIG.get("vacuum", {}))),
+        "system": cached("system", 10, lambda: sysinfo.stats(str(BASE), VERSION)),
+        "version": VERSION,
         "sleep": CONFIG.get("sleep", {}),
     })
+
+@app.route("/api/version")
+def api_version():
+    return jsonify({"version": VERSION})
+
+@app.route("/api/system")
+def api_system():
+    return jsonify(cached("system", 10, lambda: sysinfo.stats(str(BASE), VERSION)))
+
+@app.route("/api/update", methods=["POST"])
+def api_update():
+    # lance le script de mise a jour en tache detachee (git pull + relance)
+    try:
+        subprocess.Popen(["bash", str(BASE / "update.sh")],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
 
 @app.route("/api/nowplaying")
 def api_nowplaying():

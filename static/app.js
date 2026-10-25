@@ -8,6 +8,7 @@ let sleepCfg = { idle_seconds:180, night_start:"23:00", night_end:"06:00", hdmi_
 let lastActivity = Date.now();
 let screensaverOn = false, nightOn = false;
 let lastEvents = [];
+let _ver = null;
 
 // -------------------- Navigation --------------------
 $$(".nav-btn").forEach(b => b.addEventListener("click", () => {
@@ -347,6 +348,8 @@ async function refresh(){
     if(d.system) renderSystem(d.system);
     if(d.time){ const u=new Date(d.time); const el=$("#w-updated");
       if(el) el.textContent="Mis à jour "+u.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
+    // auto-rechargement de l'ecran quand une nouvelle version est deployee
+    if(d.version){ if(_ver===null){ _ver=d.version; } else if(d.version!==_ver){ setTimeout(()=>location.reload(true),600); } }
   }catch(e){ console.log("refresh err",e); }
 }
 
@@ -392,7 +395,11 @@ function renderProgramme(ville){
   el.innerHTML=evs.length?evs.map(e=>`<div class="prog-item"><div class="pg-d">${e.d}</div><div class="pg-t">${e.t}</div><div class="pg-l">${e.l}</div></div>`).join(""):'<div class="cde-empty">Pas d\'évènement.</div>';
 }
 $$("#prog-tabs .ptab").forEach(b=>b.addEventListener("click",()=>{ $$("#prog-tabs .ptab").forEach(x=>x.classList.remove("active")); b.classList.add("active"); renderProgramme(b.dataset.ville); }));
-const _upd=$("#upd-btn"); if(_upd) _upd.addEventListener("click",()=>{ const s=$("#upd-state"); if(s) s.textContent="Recherche de mise à jour…"; });
+const _upd=$("#upd-btn"); if(_upd) _upd.addEventListener("click",async()=>{
+  const s=$("#upd-state"); if(s) s.textContent="Mise à jour en cours… l'écran va se recharger si besoin";
+  try{ await fetch("/api/update",{method:"POST"}); }catch(e){}
+  if(s) setTimeout(()=>{ s.textContent="À jour ✓ (recharge auto si nouveau code)"; }, 8000);
+});
 renderSystem(); renderNews(); renderProgramme("Auriol");
 
 tick(); setInterval(tick,1000);
