@@ -84,6 +84,9 @@ function tick(){
   $("#date").textContent=`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`;
   $("#ss-time").textContent=`${hh}:${mm}`;
   $("#ss-date").textContent=`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`;
+  const it=$("#s-temp").textContent;
+  if(it && it!=="--"){ $("#ss-temp").textContent=`${it}°`; $("#ss-temp-lbl").textContent="intérieur"; }
+  else { $("#ss-temp").textContent=""; $("#ss-temp-lbl").textContent=""; }
   checkSleep();
 }
 

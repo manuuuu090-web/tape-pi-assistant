@@ -204,6 +204,10 @@ h2{font-size:5vmin; font-weight:700;}
 #screensaver{background:#000; color:#fff;}
 #ss-time{font-size:26vmin; font-weight:200; line-height:1; font-variant-numeric:tabular-nums;}
 #ss-date{font-size:5vmin; color:#9aa6b8; margin-top:2vh; text-transform:capitalize;}
+#ss-temp{position:absolute; bottom:9vmin; font-size:14vmin; font-weight:300; color:#4cc2ff;
+  line-height:1; font-variant-numeric:tabular-nums;}
+#ss-temp-lbl{position:absolute; bottom:5vmin; font-size:3.4vmin; color:#9aa6b8;
+  text-transform:uppercase; letter-spacing:.12em;}
 .black{background:#000;}
 
 /* ======================= POLISH / LIQUID-GLASS LOOK ======================= */
