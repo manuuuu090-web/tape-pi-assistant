@@ -1,0 +1,260 @@
+# Tableau de bord « Ma maison » — importé dans Home Assistant (modifiable dans l'interface)
+title: Ma maison
+views:
+- title: Système
+  path: systeme
+  icon: mdi:server-network
+  type: sections
+  max_columns: 3
+  badges:
+  - type: entity
+    entity: binary_sensor.internet
+    name: Internet
+    show_name: true
+    show_icon: true
+    color: green
+  - type: entity
+    entity: sensor.pi_temperature_processeur
+    name: Pi
+    show_name: true
+  - type: entity
+    entity: sensor.ssd_espace_libre
+    name: SSD libre
+    show_name: true
+  - type: entity
+    entity: weather.maison
+    name: Auriol
+    show_name: true
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Résumé
+      icon: mdi:shield-check
+    - type: markdown
+      grid_options:
+        columns: full
+      content: |-
+        {% set pb = [] %}
+        {% if is_state('binary_sensor.internet','off') %}{% set pb = pb + ['🌐 Internet coupé'] %}{% endif %}
+        {% if is_state('binary_sensor.freebox','off') %}{% set pb = pb + ['📡 Freebox injoignable'] %}{% endif %}
+        {% if is_state('binary_sensor.pont_hue','off') %}{% set pb = pb + ['💡 Pont Hue injoignable'] %}{% endif %}
+        {% if is_state('binary_sensor.ssd_branche','off') %}{% set pb = pb + ['💾 SSD débranché'] %}{% endif %}
+        {% if states('sensor.ssd_utilise')|int(0) > 90 %}{% set pb = pb + ['💾 SSD presque plein'] %}{% endif %}
+        {% if states('sensor.pi_temperature_processeur')|float(0) > 75 %}{% set pb = pb + ['🔥 Raspberry Pi trop chaud'] %}{% endif %}
+        {% if states('sensor.placard_temperature')|float(0) > 40 %}{% set pb = pb + ['🌡️ Placard trop chaud'] %}{% endif %}
+        {% if pb | count == 0 %}
+        ## ✅ Tout fonctionne
+        Dernière vérification à {{ now().strftime('%H:%M') }}.
+        {% else %}
+        ## ⚠️ {{ pb | count }} problème{{ 's' if pb | count > 1 }}
+        {% for p in pb %}
+        - {{ p }}
+        {% endfor %}
+        {% endif %}
+  - type: grid
+    cards:
+    - type: heading
+      heading: Réseau
+      icon: mdi:lan
+    - type: tile
+      entity: binary_sensor.internet
+      name: Internet
+      icon: mdi:web
+      color: green
+    - type: tile
+      entity: binary_sensor.freebox
+      name: Freebox
+      icon: mdi:router-wireless
+      color: green
+    - type: tile
+      entity: binary_sensor.pont_hue
+      name: Pont Hue
+      icon: mdi:lightbulb-group
+      color: green
+    - type: tile
+      entity: binary_sensor.freebox_player
+      name: Freebox Player
+      icon: mdi:television-box
+      color: green
+  - type: grid
+    cards:
+    - type: heading
+      heading: Raspberry Pi
+      icon: mdi:raspberry-pi
+    - type: gauge
+      entity: sensor.pi_temperature_processeur
+      name: Processeur
+      min: 30
+      max: 85
+      needle: true
+      severity:
+        green: 30
+        yellow: 65
+        red: 75
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: gauge
+      entity: sensor.pi_memoire_utilisee
+      name: Mémoire
+      min: 0
+      max: 100
+      needle: true
+      severity:
+        green: 0
+        yellow: 75
+        red: 90
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: tile
+      entity: sensor.pi_charge_processeur
+      name: Charge
+      icon: mdi:chip
+    - type: tile
+      entity: sensor.pi_carte_sd_utilisee
+      name: Carte SD
+      icon: mdi:micro-sd
+  - type: grid
+    cards:
+    - type: heading
+      heading: NAS (SSD)
+      icon: mdi:nas
+    - type: gauge
+      entity: sensor.ssd_utilise
+      name: Utilisé
+      min: 0
+      max: 100
+      needle: true
+      severity:
+        green: 0
+        yellow: 75
+        red: 90
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: tile
+      entity: sensor.ssd_espace_libre
+      name: Espace libre
+      icon: mdi:harddisk
+      vertical: true
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: tile
+      entity: binary_sensor.ssd_branche
+      name: SSD
+      icon: mdi:usb-flash-drive
+      color: green
+      grid_options:
+        columns: 12
+  - type: grid
+    cards:
+    - type: heading
+      heading: Placard technique
+      icon: mdi:thermometer
+    - type: gauge
+      entity: sensor.placard_temperature
+      name: Température
+      min: 10
+      max: 50
+      needle: true
+      severity:
+        green: 10
+        yellow: 32
+        red: 40
+      visibility:
+      - condition: state
+        entity: sensor.placard_temperature
+        state_not: unavailable
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: tile
+      entity: sensor.placard_humidite
+      name: Humidité
+      icon: mdi:water-percent
+      vertical: true
+      visibility:
+      - condition: state
+        entity: sensor.placard_humidite
+        state_not: unavailable
+      grid_options:
+        columns: 6
+        rows: 2
+    - type: markdown
+      grid_options:
+        columns: full
+      content: '🔌 **Capteur débranché**<br> Rebranche-le Pi éteint (VIN→1, GND→6, SDA→3, SCL→5) : il sera détecté tout seul.'
+      visibility:
+      - condition: state
+        entity: sensor.placard_temperature
+        state: unavailable
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Températures sur 24 h
+      icon: mdi:chart-line
+    - type: history-graph
+      hours_to_show: 24
+      grid_options:
+        columns: full
+      entities:
+      - entity: sensor.pi_temperature_processeur
+        name: Processeur
+      - entity: sensor.placard_temperature
+        name: Placard
+- title: Maison
+  path: maison
+  icon: mdi:home
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Météo à Auriol
+      icon: mdi:weather-partly-cloudy
+    - type: weather-forecast
+      entity: weather.maison
+      show_forecast: true
+      forecast_type: daily
+      grid_options:
+        columns: full
+  - type: grid
+    cards:
+    - type: heading
+      heading: Musique et TV
+      icon: mdi:speaker-multiple
+    - type: media-control
+      entity: media_player.salle_tv_3_salle_tv_3
+      name: Sonos Salle TV
+      grid_options:
+        columns: full
+    - type: tile
+      entity: media_player.salon
+      name: Salon (Google)
+      icon: mdi:speaker
+    - type: tile
+      entity: media_player.groupe
+      name: Groupe d'enceintes
+      icon: mdi:speaker-multiple
+    - type: tile
+      entity: media_player.freebox_player_pop
+      name: Freebox Player
+      icon: mdi:television-box
+    - type: tile
+      entity: media_player.smart_tv_pro
+      name: Smart TV
+      icon: mdi:television
+  - type: grid
+    cards:
+    - type: heading
+      heading: À venir
+      icon: mdi:plus-circle-outline
+    - type: markdown
+      grid_options:
+        columns: full
+      content: Lumières **Hue**, alarme **Ring**, aspirateur **Xiaomi**, capteurs **Zigbee**… apparaîtront ici une fois ajoutés dans *Paramètres → Appareils et services*.
