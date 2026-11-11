@@ -1,0 +1,11 @@
+[Unit]
+Description=Capteur de température du placard (I2C SHT31) pour Home Assistant
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /opt/serveur-maison/capteur-placard/capteur_placard.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

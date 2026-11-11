@@ -1,0 +1,113 @@
+# Capteurs de l'état du système, sans rien à configurer dans l'interface.
+# Adresses réseau : modifier ici si un appareil change d'adresse.
+
+# ---------- Placard (capteur I2C, écrit par le service capteur-placard) ----------
+- sensor:
+    name: Placard température
+    unique_id: placard_temperature
+    command: "cat /config/placard.json"
+    value_template: "{{ value_json.temperature }}"
+    availability: "{{ value_json.ok }}"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    json_attributes: [ok, maj, erreur]
+    scan_interval: 30
+- sensor:
+    name: Placard humidité
+    unique_id: placard_humidite
+    command: "cat /config/placard.json"
+    value_template: "{{ value_json.humidite }}"
+    availability: "{{ value_json.ok }}"
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: measurement
+    scan_interval: 30
+
+# ---------- Raspberry Pi ----------
+- sensor:
+    name: Pi température processeur
+    unique_id: pi_temperature_cpu
+    command: "cat /sys/class/thermal/thermal_zone0/temp"
+    value_template: "{{ (value | int / 1000) | round(1) }}"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    scan_interval: 30
+- sensor:
+    name: Pi mémoire utilisée
+    unique_id: pi_memoire_utilisee
+    command: "free | awk '/Mem:/ {printf \"%.0f\", $3/$2*100}'"
+    unit_of_measurement: "%"
+    state_class: measurement
+    scan_interval: 60
+- sensor:
+    name: Pi charge processeur
+    unique_id: pi_charge
+    command: "cut -d' ' -f1 /proc/loadavg"
+    state_class: measurement
+    scan_interval: 60
+- sensor:
+    name: Pi carte SD utilisée
+    unique_id: pi_sd_utilisee
+    command: "df -P /config | awk 'NR==2 {gsub(\"%\",\"\",$5); print $5}'"
+    unit_of_measurement: "%"
+    state_class: measurement
+    scan_interval: 600
+
+# ---------- SSD (NAS) ----------
+- sensor:
+    name: SSD utilisé
+    unique_id: ssd_utilise
+    command: "df -P /mnt/ssd | awk 'NR==2 {gsub(\"%\",\"\",$5); print $5}'"
+    unit_of_measurement: "%"
+    state_class: measurement
+    scan_interval: 600
+- sensor:
+    name: SSD espace libre
+    unique_id: ssd_libre
+    command: "df -Pk /mnt/ssd | awk 'NR==2 {printf \"%.0f\", $4/1048576}'"
+    unit_of_measurement: "Go"
+    state_class: measurement
+    scan_interval: 600
+- binary_sensor:
+    name: SSD branché
+    unique_id: ssd_branche
+    command: "grep -q ' /mnt/ssd ' /proc/mounts && echo ON || echo OFF"
+    device_class: connectivity
+    scan_interval: 60
+
+# ---------- Réseau (en ligne / hors ligne) ----------
+- binary_sensor:
+    name: Internet
+    unique_id: reseau_internet
+    command: "ping -c 2 -W 2 1.1.1.1 >/dev/null 2>&1 && echo ON || echo OFF"
+    device_class: connectivity
+    scan_interval: 60
+- binary_sensor:
+    name: Freebox
+    unique_id: reseau_freebox
+    command: "ping -c 2 -W 2 192.168.1.254 >/dev/null 2>&1 && echo ON || echo OFF"
+    device_class: connectivity
+    scan_interval: 60
+- binary_sensor:
+    name: Pont Hue
+    unique_id: reseau_pont_hue
+    command: "ping -c 2 -W 2 192.168.1.49 >/dev/null 2>&1 && echo ON || echo OFF"
+    device_class: connectivity
+    scan_interval: 60
+- binary_sensor:
+    name: Freebox Player
+    unique_id: reseau_freebox_player
+    command: "ping -c 2 -W 2 192.168.1.44 >/dev/null 2>&1 && echo ON || echo OFF"
+    device_class: connectivity
+    scan_interval: 120
+# Les 2 switchs réseau : s'ils sont « non manageables », ils n'ont pas d'adresse.
+# Leur bon fonctionnement se voit alors via le Pi et la Freebox (branchés dessus).
+# S'ils ont une adresse, décommenter et la mettre ici :
+# - binary_sensor:
+#     name: Switch 1
+#     unique_id: reseau_switch_1
+#     command: "ping -c 2 -W 2 192.168.1.XXX >/dev/null 2>&1 && echo ON || echo OFF"
+#     device_class: connectivity
+#     scan_interval: 60

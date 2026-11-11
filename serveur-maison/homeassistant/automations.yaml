@@ -1,0 +1,99 @@
+# Alertes envoyées sur le téléphone (appli Home Assistant) et affichées dans l'interface.
+# « notify.notify » envoie à tous les téléphones où l'appli est installée.
+
+- id: alerte_placard_chaud
+  alias: "Alerte : placard trop chaud"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.placard_temperature
+      above: 40
+      for: "00:10:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "🌡️ Placard trop chaud"
+        message: "Le placard est à {{ states('sensor.placard_temperature') }} °C. Vérifie l'aération."
+    - action: persistent_notification.create
+      data:
+        title: "Placard trop chaud"
+        message: "{{ states('sensor.placard_temperature') }} °C"
+
+- id: alerte_pi_chaud
+  alias: "Alerte : Raspberry Pi trop chaud"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.pi_temperature_processeur
+      above: 75
+      for: "00:05:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "🔥 Raspberry Pi chaud"
+        message: "Processeur à {{ states('sensor.pi_temperature_processeur') }} °C."
+
+- id: alerte_ssd_plein
+  alias: "Alerte : SSD presque plein"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.ssd_utilise
+      above: 90
+  actions:
+    - action: notify.notify
+      data:
+        title: "💾 SSD presque plein"
+        message: "Le SSD est plein à {{ states('sensor.ssd_utilise') }} %, il reste {{ states('sensor.ssd_espace_libre') }} Go."
+
+- id: alerte_ssd_debranche
+  alias: "Alerte : SSD débranché"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.ssd_branche
+      to: "off"
+      for: "00:02:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "💾 SSD débranché"
+        message: "Le SSD du NAS n'est plus monté sur le Pi."
+
+- id: alerte_internet_coupe
+  alias: "Alerte : Internet coupé puis revenu"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.internet
+      from: "off"
+      to: "on"
+  conditions:
+    - condition: template
+      value_template: "{{ (now() - trigger.from_state.last_changed).total_seconds() > 120 }}"
+  actions:
+    - action: notify.notify
+      data:
+        title: "🌐 Internet revenu"
+        message: "Coupure d'Internet de {{ ((now() - trigger.from_state.last_changed).total_seconds() / 60) | round(0) }} min."
+
+- id: alerte_appareil_reseau
+  alias: "Alerte : Freebox ou pont Hue hors ligne"
+  triggers:
+    - trigger: state
+      entity_id: [binary_sensor.freebox, binary_sensor.pont_hue]
+      to: "off"
+      for: "00:05:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "📡 Appareil hors ligne"
+        message: "{{ trigger.to_state.name }} ne répond plus depuis 5 minutes."
+
+- id: alerte_capteur_placard_panne
+  alias: "Alerte : capteur du placard ne répond plus"
+  triggers:
+    - trigger: state
+      entity_id: sensor.placard_temperature
+      to: "unavailable"
+      for: "00:10:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "⚠️ Capteur du placard"
+        message: "Le capteur de température du placard ne répond plus."

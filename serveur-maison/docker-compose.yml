@@ -1,0 +1,26 @@
+# Serveur maison — Home Assistant + ESPHome (pour le panneau mural 4")
+# Démarrage :  cd /opt/serveur-maison && sudo docker compose up -d
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    network_mode: host          # découverte automatique Hue, Sonos, Google Cast...
+    privileged: true            # accès à la clé Zigbee USB
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - /srv/homeassistant/config:/config
+      - /run/dbus:/run/dbus:ro  # Bluetooth
+      - /dev:/dev               # clé Zigbee (branchée avant ou après le démarrage)
+      - /mnt/ssd:/mnt/ssd:ro    # pour surveiller la place libre du SSD
+
+  esphome:
+    image: ghcr.io/esphome/esphome:stable
+    container_name: esphome
+    network_mode: host          # tableau de bord ESPHome : http://<pi>:6052
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - /srv/esphome:/config

@@ -1,0 +1,33 @@
+# Home Assistant — serveur maison (Raspberry Pi 5, Auriol)
+default_config:
+
+homeassistant:
+  name: Maison
+  time_zone: Europe/Paris
+  country: FR
+  language: fr
+  unit_system: metric
+  currency: EUR
+
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Tableau de bord « État du système » (onglet dans l'appli et sur ordinateur)
+lovelace:
+  dashboards:
+    etat-systeme:
+      mode: yaml
+      filename: dashboards/etat_systeme.yaml
+      title: État du système
+      icon: mdi:server-network
+      show_in_sidebar: true
+
+# Historique gardé 30 jours (courbes de température, etc.)
+recorder:
+  purge_keep_days: 30
+
+command_line: !include capteurs_systeme.yaml

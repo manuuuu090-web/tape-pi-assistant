@@ -1,0 +1,89 @@
+# Tableau de bord « État du système » — lisible sur téléphone
+title: État du système
+views:
+  - title: Système
+    path: systeme
+    icon: mdi:server-network
+    cards:
+      - type: glance
+        title: Réseau
+        show_state: true
+        entities:
+          - entity: binary_sensor.internet
+            name: Internet
+          - entity: binary_sensor.freebox
+            name: Freebox
+          - entity: binary_sensor.pont_hue
+            name: Hue
+          - entity: binary_sensor.ssd_branche
+            name: SSD
+
+      - type: horizontal-stack
+        cards:
+          - type: gauge
+            name: Placard
+            entity: sensor.placard_temperature
+            min: 10
+            max: 50
+            needle: true
+            severity:
+              green: 10
+              yellow: 32
+              red: 40
+          - type: gauge
+            name: Processeur
+            entity: sensor.pi_temperature_processeur
+            min: 30
+            max: 85
+            needle: true
+            severity:
+              green: 30
+              yellow: 65
+              red: 75
+
+      - type: entities
+        title: Raspberry Pi
+        entities:
+          - entity: sensor.placard_humidite
+            name: Humidité du placard
+          - entity: sensor.pi_memoire_utilisee
+            name: Mémoire utilisée
+          - entity: sensor.pi_charge_processeur
+            name: Charge du processeur
+          - entity: sensor.pi_carte_sd_utilisee
+            name: Carte SD utilisée
+
+      - type: horizontal-stack
+        cards:
+          - type: gauge
+            name: SSD utilisé
+            entity: sensor.ssd_utilise
+            min: 0
+            max: 100
+            severity:
+              green: 0
+              yellow: 75
+              red: 90
+          - type: entity
+            name: Espace libre
+            entity: sensor.ssd_espace_libre
+            icon: mdi:harddisk
+
+      - type: history-graph
+        title: Températures (48 h)
+        hours_to_show: 48
+        entities:
+          - entity: sensor.placard_temperature
+            name: Placard
+          - entity: sensor.pi_temperature_processeur
+            name: Processeur
+
+  - title: Maison
+    path: maison
+    icon: mdi:home
+    cards:
+      - type: markdown
+        content: >
+          Tes appareils (Hue, Sonos, Ring, Xiaomi, capteurs Zigbee…) apparaissent
+          automatiquement dans le tableau de bord **Aperçu**, rangés par pièce,
+          dès que tu les ajoutes dans **Paramètres → Appareils et services**.
