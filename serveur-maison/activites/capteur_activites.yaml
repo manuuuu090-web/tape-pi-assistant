@@ -1,0 +1,11 @@
+
+# ---------- Activités de la semaine (agenda MyProvence) ----------
+- sensor:
+    name: Activités de la semaine
+    unique_id: activites_semaine
+    command: "python3 /config/activites.py"
+    command_timeout: 120
+    value_template: "{{ value_json.total }}"
+    json_attributes: [auriol, cassis, la_ciotat, roquevaire, maj, ok]
+    icon: mdi:party-popper
+    scan_interval: 21600
