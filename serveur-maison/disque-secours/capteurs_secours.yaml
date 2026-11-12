@@ -1,0 +1,27 @@
+
+# ---------- Disque de secours (écrit par sauvegarde-ssd.sh) ----------
+- sensor:
+    name: Sauvegarde état
+    unique_id: sauvegarde_etat
+    command: "cat /config/secours.json"
+    value_template: "{{ value_json.etat }}"
+    json_attributes: [message, duree_min, maj]
+    icon: mdi:backup-restore
+    scan_interval: 120
+- sensor:
+    name: Sauvegarde dernière réussite
+    unique_id: sauvegarde_derniere
+    command: "cat /config/secours.json"
+    value_template: "{{ (value_json.derniere_reussite | int(0)) | as_datetime | as_local }}"
+    availability: "{{ value_json.derniere_reussite | int(0) > 0 }}"
+    device_class: timestamp
+    scan_interval: 300
+- sensor:
+    name: Disque de secours libre
+    unique_id: secours_libre
+    command: "cat /config/secours.json"
+    value_template: "{{ value_json.libre_go }}"
+    availability: "{{ value_json.libre_go is number }}"
+    unit_of_measurement: "Go"
+    icon: mdi:harddisk
+    scan_interval: 300

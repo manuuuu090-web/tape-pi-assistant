@@ -1,0 +1,28 @@
+
+- id: alerte_sauvegarde_erreur
+  alias: "Alerte : la sauvegarde du SSD a échoué"
+  triggers:
+    - trigger: state
+      entity_id: sensor.sauvegarde_etat
+      to: "erreur"
+  actions:
+    - action: notify.notify
+      data:
+        title: "💾 Sauvegarde ratée"
+        message: "{{ state_attr('sensor.sauvegarde_etat', 'message') }}"
+
+- id: alerte_sauvegarde_ancienne
+  alias: "Alerte : pas de sauvegarde depuis 8 jours"
+  triggers:
+    - trigger: time
+      at: "19:00:00"
+  conditions:
+    - condition: template
+      value_template: >
+        {{ states('sensor.sauvegarde_derniere') not in ['unknown','unavailable']
+           and (now() - as_datetime(states('sensor.sauvegarde_derniere'))).days >= 8 }}
+  actions:
+    - action: notify.notify
+      data:
+        title: "💾 Sauvegarde en retard"
+        message: "Le SSD n'a pas été copié sur le disque de secours depuis plus de 8 jours."
