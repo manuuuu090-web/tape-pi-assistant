@@ -1,0 +1,18 @@
+
+# ---------- Mises à jour automatiques (écrit par maj-auto.sh) ----------
+- sensor:
+    name: Mise à jour état
+    unique_id: maj_etat
+    command: "cat /config/maj.json 2>/dev/null || echo '{\"etat\":\"jamais\",\"message\":\"Pas encore de mise à jour\"}'"
+    value_template: "{{ value_json.etat }}"
+    json_attributes: [message, journal, version_ha]
+    icon: mdi:update
+    scan_interval: 300
+- sensor:
+    name: Mise à jour dernière réussite
+    unique_id: maj_derniere
+    command: "cat /config/maj.json 2>/dev/null || echo '{}'"
+    value_template: "{{ (value_json.derniere_reussite | int(0)) | as_datetime | as_local }}"
+    availability: "{{ value_json.derniere_reussite | int(0) > 0 }}"
+    device_class: timestamp
+    scan_interval: 600
